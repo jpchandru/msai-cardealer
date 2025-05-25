@@ -37,6 +37,24 @@ def main(args):  # Write the function name for the main data preparation logic
     # Step 3: Save the training and testing datasets as CSV files in separate directories for easier access and organization.  
     # Step 4: Log the number of rows in the training and testing datasets as metrics for tracking and evaluation.  
 
+    # Encoding the categorical 'Type' column
+    # Note: We should ideally use one-hot encoding here as there's no inherent order between the categories
+    # However, as we're using a decision tree model, label encoding also works here
+    label_encoder = LabelEncoder()
+    df['Type'] = label_encoder.fit_transform(df['Type'])
+
+    # Split Data into train and test datasets
+    train_df, test_df = train_test_split(df, test_size=args.test_train_ratio, random_state=42)
+
+    # Save train and test data
+    os.makedirs(args.train_data, exist_ok=True)
+    os.makedirs(args.test_data, exist_ok=True)
+    train_df.to_csv(os.path.join(args.train_data, "train.csv"), index=False)
+    test_df.to_csv(os.path.join(args.test_data, "test.csv"), index=False)
+
+    # Log the metrics
+    mlflow.log_metric('train size', train_df.shape[0])
+    mlflow.log_metric('test size', test_df.shape[0])
 
 if __name__ == "__main__":
     mlflow.start_run()
@@ -48,7 +66,7 @@ if __name__ == "__main__":
         f"Raw data path: {args.raw_data}",  # Print the raw_data path
         f"Train dataset output path: {args.train_data}",  # Print the train_data path
         f"Test dataset path: {args.test_data}",  # Print the test_data path
-        f"Test-train ratio: {args.train_ratio}",  # Print the test_train_ratio
+        f"Test-train ratio: {args.test_train_ratio}",  # Print the test_train_ratio
     ]
 
     for line in lines:
