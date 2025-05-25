@@ -7,8 +7,8 @@ Trains ML model using training dataset and evaluates using test dataset. Saves t
 import argparse
 from pathlib import Path
 import pandas as pd
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import accuracy_score
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error
 import mlflow
 import mlflow.sklearn
 
@@ -23,8 +23,8 @@ def parse_args():
     parser.add_argument("--train_data", type=str, help="Path to train dataset")  # Specify the type for train_data
     parser.add_argument("--test_data", type=str, help="Path to test dataset")  # Specify the type for test_data
     parser.add_argument("--model_output", type=str, help="Path of output model")  # Specify the type for model_output
-    parser.add_argument('--criterion', type=str, default='gini',
-                        help='The function to measure the quality of a split')  # Specify the type and default value for n_estimators
+    parser.add_argument('--n_estimators', type=int, default=100,
+                        help='The number of trees in the forest')  # Specify the type and default value for n_estimators
     parser.add_argument('--max_depth', type=int, default=None,
                         help='The maximum depth of the tree')  # Specify the type and default value for max_depth
 
@@ -50,35 +50,28 @@ def main(args):
     test_df = pd.read_csv(Path(args.test_data) / "test.csv")
 
     # Split the data into input(X) and output(y) 
-    y_train = train_df['Failure']  # Specify the target column
-    X_train = train_df.drop(columns=['Failure'])
-    y_test = test_df['Failure']
-    X_test = test_df.drop(columns=['Failure'])
+    y_train = train_df['Price']  # Specify the target column
+    X_train = train_df.drop(columns=['Price'])
+    y_test = test_df['Price']
+    X_test = test_df.drop(columns=['Price'])
 
     # Initialize and train a RandomForest Regressor
-    #model = RandomForestRegressor(n_estimators=args.n_estimators, max_depth=args.______, random_state=42)  # Provide the arguments for RandomForestRegressor
-    #Initialize and train a Decision Tree Classifier
-    model = DecisionTreeClassifier(criterion=args.criterion, max_depth=args.max_depth)
+    model = RandomForestRegressor(n_estimators=args.n_estimators, max_depth=args.max_depth, random_state=42)  # Provide the arguments for RandomForestRegressor
     model.fit(X_train, y_train)  # Train the model
 
-    # Log model hyperparameters
-    mlflow.log_param("model", "DecisionTreeClassifier")  # Provide the model name
-    mlflow.log_param("criterion", args.criterion)
+
+# Log model hyperparameters
+    mlflow.log_param("model", "RandomForestRegressor")  # Provide the model name
+    mlflow.log_param("n_estimators", args.n_estimators)
     mlflow.log_param("max_depth", args.max_depth)
 
-    # Predict using the DecisionTree Classifier on test data
+    # Predict using the RandomForest Regressor on test data
     yhat_test = model.predict(X_test)  # Predict the test data
 
     # Compute and log mean squared error for test data
-    #mse = mean_squared_error(y_test, yhat_test)
-    #print('Mean Squared Error of RandomForest Regressor on test set: {:.2f}'.format(mse))
-    #mlflow.log_metric("MSE", float(mse))  # Log the MSE
-
-    accuracy = accuracy_score(y_test, yhat_test)
-    print(f'Accuracy of Decision Tree classifier on test set: {accuracy:.2f}')
-    # Logging the accuracy score as a metric
-    mlflow.log_metric("Accuracy", float(accuracy))
-
+    mse = mean_squared_error(y_test, yhat_test)
+    print('Mean Squared Error of RandomForest Regressor on test set: {:.2f}'.format(mse))
+    mlflow.log_metric("MSE", float(mse))  # Log the MSE
 
     # Save the model
     mlflow.sklearn.save_model(sk_model=model, path=args.model_output)  # Save the model
@@ -95,7 +88,7 @@ if __name__ == "__main__":
         f"Train dataset input path: {args.train_data}",
         f"Test dataset input path: {args.test_data}",
         f"Model output path: {args.model_output}",
-        f"Number of Estimators: {args.criterion}",
+        f"Number of Estimators: {args.n_estimators}",
         f"Max Depth: {args.max_depth}"
     ]
 

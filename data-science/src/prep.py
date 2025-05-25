@@ -42,7 +42,7 @@ def main(args):  # Write the function name for the main data preparation logic
     # However, as we're using a decision tree model, label encoding also works here
     # Encode categorical feature
     le = LabelEncoder()
-    df['Type'] = le.fit_transform(df['Type'])  # Write code to encode the categorical feature
+    df['Price'] = le.fit_transform(df['Price'])  # Write code to encode the categorical feature
 
     # Split Data into train and test datasets
     train_df, test_df = train_test_split(df, test_size=args.test_train_ratio, random_state=42)  #  Write code to split the data into train and test datasets
