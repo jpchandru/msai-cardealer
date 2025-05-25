@@ -40,21 +40,22 @@ def main(args):  # Write the function name for the main data preparation logic
     # Encoding the categorical 'Type' column
     # Note: We should ideally use one-hot encoding here as there's no inherent order between the categories
     # However, as we're using a decision tree model, label encoding also works here
-    label_encoder = LabelEncoder()
-    df['Type'] = label_encoder.fit_transform(df['Type'])
+    # Encode categorical feature
+    le = LabelEncoder()
+    df['Type'] = le.fit_transform(df['Type'])  # Write code to encode the categorical feature
 
     # Split Data into train and test datasets
-    train_df, test_df = train_test_split(df, test_size=args.test_train_ratio, random_state=42)
+    train_df, test_df = train_test_split(df, test_size=args.test_train_ratio, random_state=42)  #  Write code to split the data into train and test datasets
 
-    # Save train and test data
-    os.makedirs(args.train_data, exist_ok=True)
-    os.makedirs(args.test_data, exist_ok=True)
-    train_df.to_csv(os.path.join(args.train_data, "train.csv"), index=False)
-    test_df.to_csv(os.path.join(args.test_data, "test.csv"), index=False)
+    # Save the train and test data
+    os.makedirs(args.train_data, exist_ok=True)  # Create directories for train_data and test_data
+    os.makedirs(args.test_data, exist_ok=True)  # Create directories for train_data and test_data
+    train_df.to_csv(os.path.join(args.train_data, "train.csv"), index=False)  # Specify the name of the train data file
+    test_df.to_csv(os.path.join(args.test_data, "test.csv"), index=False)  # Specify the name of the test data file
 
-    # Log the metrics
-    mlflow.log_metric('train size', train_df.shape[0])
-    mlflow.log_metric('test size', test_df.shape[0])
+    # log the metrics
+    mlflow.log_metric('train size', train_df.shape[0])  # Log the train dataset size
+    mlflow.log_metric('test size', test_df.shape[0])  # Log the test dataset size
 
 if __name__ == "__main__":
     mlflow.start_run()
